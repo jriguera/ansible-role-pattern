@@ -1,0 +1,13 @@
+---
+- hosts: all
+  sudo: true
+  roles:
+    # Current parameterized role, look at 'defaults/main.yml' to see all variables
+    - role: .
+      rolename_tcp_address: "127.0.0.1"
+      rolename_tcp_port: 9999
+
+  tasks:  
+    - name: Display all variables/facts known for a host
+      debug: var=hostvars[inventory_hostname]
+
