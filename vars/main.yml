@@ -1,0 +1,23 @@
+---
+# Those variables are different than the parameters of the service,
+# they are environment specific, that means, they do not affect to the 
+# functionality of the service. This is the case, for example, for the
+# name of the package between distributions, or the location of the 
+# configuration file.
+
+# Take the package given by the OS/distrib
+rolename_os_packages: True
+
+# Define the name of the service, user and group (useful to create templates)
+rolename_daemon: serviced
+rolename_user: user
+rolename_group: group
+
+# Always define the next 3 variables ...
+rolename_config_dir: /etc/service
+rolename_pidfile: /var/run/service/pid
+rolename_config: /etc/service/service.conf
+
+rolename_ssl_dir: /etc/service/ssl
+rolename_plugin_dir: /usr/lib/service/lib/
+

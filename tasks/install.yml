@@ -1,0 +1,148 @@
+---
+# Install tasks. You can split this file for Debian, RedHat .....
+# See OS variables in 'vars/main.yml' and 'vars/Debian.yml' or 'vars/RedHat.yml'.
+
+
+
+### Debian/Ubuntu repository section. USE distro TAGS!!!!
+
+# Import the apt key if defined and if it is and URL
+- name: Debian - Import repository key
+  apt_key: url="{{ rolename_os_repo_key }}" state=present
+  when: >
+    ansible_os_family == 'Debian' and 
+    not rolename_os_packages and
+    not rolename_os_repo_key is none and
+    rolename_os_repo_key | search("http://.*")
+  ignore_errors: yes
+  tags: ["debian"]
+
+# Import the apt key if defined and it is a package
+- name: Debian - Add repository package
+  apt: name="{{ rolename_os_repo_key }}" state=latest
+  when: >
+    ansible_os_family == 'Debian' and 
+    not rolename_os_packages and
+    not rolename_os_repo_key is none and
+    not rolename_os_repo_key | search("http://.*")
+  tags: ["debian"]
+
+- name: Debian - Add repository url
+  apt_repository: repo="{{ rolename_os_repo_url }}" state=present
+  when: >
+    ansible_os_family == 'Debian' 
+    and not rolename_os_packages
+  tags: ["debian"]
+
+
+
+### RedHat/Centos repository. USE distro TAGS!!!!
+
+- name: RedHat - Add repository
+  yum: name="{{ rolename_os_repo_url }}" state=present
+  when: >
+    ansible_os_family == 'RedHat' and 
+    not rolename_os_packages
+  tags: ["redhat"]
+
+- name: RedHat - Import repository key
+  rpm_key: key="{{ rolename_os_repo_key }}" state=present
+  when: >
+    ansible_os_family == 'RedHat' and 
+    not rolename_os_packages and 
+    not rolename_os_repo_key is none
+  tags: ["redhat"]
+
+
+
+# Most times is useful checking if the configuration already exists or 
+# if the pidfile in order to decide is some actions are required.
+
+# Put two undercores as prefix when register variables.
+# Put one undercore as prefix when set facts.
+# Those rules is to avoid overwriting real conf variables and also
+# to differenciate them from defined facts.
+
+- name: Check if configuration exists
+  stat: path="{{ rolename_config }}"
+  register: __rolename_conf
+
+- name: Setup configuration fact
+  set_fact: _rolename_previous="{{ __rolename_conf.stat.exists }}"
+
+
+
+### Section to install the packages. USE distro TAGS!!!!
+
+- name: RedHat - Install required packages
+  yum:
+    name: "{{ item.key }}{{ '-' + item.version | default('*') }}"
+    state: "{{ item.state | default('present') }}"
+  with_dict: rolename_packages
+  when: ansible_os_family == 'RedHat'
+  register: __rolename_installed
+  tags: ["redhat"]
+
+- name: Debian - Install required packages
+  apt: 
+    name: "{{ item.key }}{{ '=' + item.version | default('*') }}"
+    state: "{{ item.state | default('present') }}"
+    install_recommends: "{{ rolename_packages_install_recommends }}"
+  with_dict: rolename_packages
+  when: ansible_os_family == 'Debian'
+  register: __rolename_installed
+  tags: ["debian"]
+
+
+# It is also useful to check if packages were installed (for other tasks).
+# For example, the next one ...
+
+- name: Check if packages were installed
+  set_fact: _rolename_reinstalled="{{ __rolename_installed.changed }}"
+
+
+
+### After installing the packages; stop the services. 
+# The services should be stopped if they are not properly configured and due to the
+# fact that Debian/Ubuntu always start the services with the default configuration,
+# it is a good use always stop, but of course only if new packages were installed.
+# Also the services should not be enabled in this stage (it is part of the 
+# configuration) because is something goes wrong is better having the service
+# stopped than having it misconfigured.
+
+# Because Ubuntu starts the service as part of the install process, we need to stop it
+- name: Ensure service is stopped after initial install
+  service: name={{ rolename_daemon }} state=stopped enabled=no
+  when: _rolename_reinstalled
+  ignore_errors: yes
+
+
+# Some services (like mysql) have dual upstart and initd configuration. But they
+# only work by using the same service which was use to start/stop. To avoid that
+# weird behaviour, delete one of the files.
+
+- name: Debian - Delete upstart configuration
+  file:
+    path: "/etc/init/{{ rolename_daemon }}.conf"
+    state: absent
+  when: >
+    ansible_os_family == 'Debian' and
+    rolename_init_system != "upstart"
+  notify: stop rolename
+  tags: ["debian", "ubuntu"]
+
+- name: Debian - Delete init.d configuration
+  file:
+    path: "/etc/init.d/{{ rolename_daemon }}"
+    state: absent
+  when: >
+    ansible_os_family == 'Debian' and
+    rolename_init_system != "initd"
+  notify: stop rolename
+  tags: ["debian", "ubuntu"]
+
+
+# Flush all notify stop handlers, to be sure that they are done!
+# The reason is because the upstart service remains the fd open.
+- meta: flush_handlers
+

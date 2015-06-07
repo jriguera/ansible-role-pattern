@@ -1,0 +1,46 @@
+---
+# This is another part of the example ... some services have the configuration
+# splitted in files, sometimes you have to enable/disable things in two steps:
+# 1) Delete required ones
+# 2) Enable the new(s) one(s)
+
+# Variables defined in 'defaults/main.yml'
+# Remember, the variable is a list of dicts:
+#rolename_vhost_list: 
+#  - name: "name"
+#    delete: true
+#    type: "process"
+#    parameter1: "/var/run/process/process.pid"
+#    parameter2: "value2"
+
+
+# Walk the list looking for '.delete' key on each dict
+# Reload when done!
+- name: Delete vhosts
+  file:
+    state: absent
+    path: "{{ rolename_config_dir }}/vhosts/{{ item.name }}" 
+  with_items: rolename_vhost_list
+  when: >
+    rolename_vhost_list is defined and
+    not rolename_vhost_list is none and
+    (item.delete is defined and item.delete)
+  notify: reload rolename
+
+
+# Add the new items
+# Reload when done!
+- name: Add vhosts
+  template:
+    src: vhost.j2
+    dest: "{{ rolename_config_dir }}/vhosts/{{ item.name }}"
+    owner: "{{ rolename_user }}"
+    group: "{{ rolename_group }}"
+    mode: 0644
+  with_items: rolename_vhost_list
+  when: >
+    rolename_vhost_list is defined and
+    not rolename_vhost_list is none and
+    not (item.delete is defined and item.delete)
+  notify: reload rolename
+

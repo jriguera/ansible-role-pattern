@@ -1,0 +1,52 @@
+---
+# This is part of the example ... some services have plugins, and in other
+# to enable and disable ones or others, you have to apply two step way:
+# 1) Enable the new(s) one(s)
+# 2) Disable the required ones
+
+# Variables defined in 'defaults/main.yml'
+
+
+# If the plugins are files ... copy them
+# As the source is a dict, we have to get a list with the values (if they are
+# not empty) 
+- name: Copy the plugins
+  copy:
+    src: "{{ item }}"
+    dest: "{{ rolename_plugin_dir }}/plugins/{{ item | basename }}"
+    owner: "{{ rolename_user }}"
+    group: "{{ rolename_group }}"
+    mode: 0644
+  with_items: (rolename_plugins_dict.values() | select("string")) | list
+  when: >
+    rolename_plugins_dict is defined and
+    not rolename_plugins_dict is none
+
+
+# Now is time to enable or disable them....
+# Get a list of the new plugins and enable them ...
+- name: Enable plugins
+  command:
+    enable-plugins "{{ rolename_plugins_dict | join(',') }}"
+  when: >
+    rolename_plugins_dict is defined and
+    not rolename_plugins_dict is none
+  notify: restart rolename
+
+
+# Get a list of plugins (optional is needed)
+- name: List of active plugins to disable
+  command: list-plugins -m
+  register: __plugins_result
+  when: >
+    not (rolename_plugins_dict is defined and not rolename_plugins_dict is none)
+
+
+- name: Disable all plugins if none added
+  command:
+    disable-plugin "{{ item }}"
+  with_items: __plugins_result.stdout_lines
+  when: >
+    not (rolename_plugins_dict is defined and not rolename_plugins_dict is none)
+  notify: restart rolename
+

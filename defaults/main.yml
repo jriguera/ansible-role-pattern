@@ -1,0 +1,56 @@
+---
+# If you want to maintain your code, keep the name consistency between your 
+# playbooks, inventories, roles and group variables. 
+
+# Use `defaults` as service parameters in order to get parameterized roles. 
+# Here you should define your service defaults settings (to use them in 
+# the template), and the recommended defaults (from the owner/programmer) 
+# should be defined in the template with `parameter | default()`. By doing in
+# that way, we could reuse those templates in other provisioning tools 
+# different than Ansible.
+
+
+# Always define is enabled on startup. It is usefull to deactivate the service
+rolename_enabled_on_startup: true
+
+# Ansible supports both scalar and dictionary types of variables. 
+# It is better using scalar ones, because it can be easily redefined,
+# dictionaries or list are difficult to merge.
+
+# Main options
+rolename_ssl: false
+
+# rolename TCP configuration
+rolename_tcp_address: "0.0.0.0"
+rolename_tcp_port: 8888
+
+# Other options:
+rolename_conf_reverse_dns_lookups: false
+
+# rolename SSL configuration
+rolename_ssl_address: "0.0.0.0"
+rolename_ssl_port: 8889
+rolename_ssl_cacertfile: if/defined/local/file1
+rolename_ssl_certfile: if/defined/local/file2
+
+
+# It is a good practise ending the list or dict variables
+# with the suffix '_list' or '_dict'
+
+
+# Plugins, see 'tasks/plugins.yml' about how to use this part.
+# In this case is about using ansible modules or command ....
+rolename_plugins_dict:
+  plugin1:
+  plugin2: local/file2
+
+
+# See 'tasks/vhost.yml' to see how to use it.
+# This case is about howto manage services based on templates.
+rolename_vhost_list: 
+  - name: "name"
+    delete: true
+    type: "process"
+    parameter1: "/var/run/process/process.pid"
+    parameter2: "value2"
+

@@ -1,0 +1,44 @@
+#jinja2: trim_blocks: "true", lstrip_blocks: "true"
+# {{ ansible_managed }}
+# Example configuration file for service.
+#
+# Format is one option per line ...
+
+
+# Use `defaults` as service parameters in order to get parameterized roles. 
+# Here you should define your service defaults settings (to use them in 
+# the template), and the recommended defaults (from the owner/programmer) 
+# should be defined in the template with `parameter | default()`. By doing in
+# that way, we could reuse those templates in other provisioning tools 
+# different than Ansible.
+
+
+user={{ rolename_user }}
+group={{ rolename_group }}
+
+
+{% if rolename_pidfile is defined -%}
+pid-file={{ rolename_pidfile }}
+{% endif %}
+
+
+{% if rolename_conf_no_poll is defined and rolename_conf_no_poll -%}
+no-poll
+{% elif rolename_conf_clear_on_reload is defined and rolename_conf_clear_on_reload %}
+clear-on-reload
+{% endif %}
+
+
+# Set the dns memory cachesize here.
+cache-size={{ rolename_conf_cache_size | default('1024') }}
+
+# How to parse a list of dicts
+{% for (key, values) in rolename_conf_dhcp.iteritems() -%}
+dhcp-range=set:{{ key }},{{ values["range"] | join(',') }}
+
+{% if values["option"] is defined -%}
+{% for opt in values["option"] -%}
+dhcp-option=tag:{{ key }},{{ opt }}
+{% endfor %}
+{% endif %}
+

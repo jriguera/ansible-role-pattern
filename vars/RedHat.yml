@@ -1,0 +1,30 @@
+---
+# RedHat specific variables
+
+# External repo/key (or url to the key!) where the packages are in
+# case if the 'rolename_os_packages' is false (main.yml)
+rolename_os_repo_url: "http://download.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+rolename_os_repo_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+
+# Redefine some variables if needed ...
+rolename_pidfile: /var/run/service/pid
+
+# Define a dict with the needed packages for this service.
+# Remember that one of the principles is idempotence, so you should not
+# use 'latest' when installing a package.
+# The better is always use the same way as 'package1', because it allows 
+# updates that they dont affect the configuration (bug, security)
+# by just only run the role. Have a look at 'tasks/install.yml' to see
+# how it works.
+
+rolename_packages:
+  package1:
+    state: latest
+    version: 4.4.*
+  package2:
+    state: latest
+  package3:
+    state: present
+    version: 4.*
+  package4:
+    state: present

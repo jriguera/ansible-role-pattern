@@ -1,0 +1,13 @@
+---  
+- name: restart rolename
+  service: name={{ rolename_daemon }} state=restarted
+
+- name: reload rolename
+  service: name={{ rolename_daemon }} state=reloaded
+  
+- name: start rolename
+  service: name={{ rolename_daemon }} state=started
+
+- name: stop rolename
+  service: name={{ rolename_daemon }} state=stopped
+

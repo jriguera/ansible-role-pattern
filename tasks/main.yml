@@ -1,0 +1,47 @@
+---
+# mail.yml is just to check if the role can run on the system, include
+# the OS/distribution variables and include files with the tasks.
+
+# Each task needs a name and it should be a block of code, do not put
+# lines from diferent tasks together please.
+
+# Use tags for tasks, always! With the appropriate tags, you can isolate the 
+# parts of the playbook, or exclude others.
+# Tag always with the name of the role and the name of the include file
+# Also, if you have to split for different distros (See install.yml) tag
+# the tasks with the name of the system (debian, redhat, ubuntu ...)
+
+# Check if the role is prepared to run on this system ...
+- name: Check if the role is supported on this system
+  fail: msg="Role not supported on this system"
+  when: >
+     ansible_distribution != 'Ubuntu' and 
+     ansible_distribution != 'CentOS' and 
+     ansible_distribution != 'Debian' and 
+     ansible_distribution != 'Red Hat Enterprise Linux'
+
+# Load the OS specific variables (config files and packages) for this 
+# service. Vars files are on /var: Debian.yml, RedHat.yml ...
+- name: Include OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  tags: ["rolename", "distribution", "packages", "service"]
+
+# Tasks to install the service. The service is stopped after these tasks.
+- include: install.yml
+  tags: ["rolename", "install"]
+
+# Tasks to setup the configuration of the service by using templates and 
+# make sure that the service is running with the new configuration.
+- include: configure.yml
+  tags: ["rolename", "configure"]
+
+# Tasks to setup plugins or addicional configuration. Example about howto
+# enable and disable items in two steps
+- include: plugins.yml
+  tags: ["rolename", "plugins"]
+
+# Additional tasks ... Another example about enabling or disabling items
+# in two steps but this time using templates ...
+- include: vhost.yml
+  tags: ["rolename", "vhost"]
+
