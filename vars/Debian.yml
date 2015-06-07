@@ -3,7 +3,7 @@
 
 # External repo/key (or url to the key!) where the packages are in
 # case if the 'rolename_os_packages' is false (main.yml)
-rolename_os_repo_url: "deb http://ubuntu-cloud.archive.canonical.com/ubuntu {{ ansible_distribution_release }}-updates/{{ ironic_release }} main"
+rolename_os_repo_url: "deb http://ubuntu-cloud.archive.canonical.com/ubuntu {{ ansible_distribution_release }}-updates/rolename main"
 rolename_os_repo_key: "ubuntu-cloud-keyring"
 
 rolename_packages_install_recommends: true
