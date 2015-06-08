@@ -5,7 +5,7 @@ Due to the fact there are no global ansible conventions, it is really difficult
 to reuse the code of roles/playbooks and people use different strategies to 
 create roles. 
 
-Everything is about Patterns: http://en.wikipedia.org/wiki/Design_Patterns. 
+Everything is about Patterns: http://en.wikipedia.org/wiki/Software_design_pattern . 
 A pattern is a piece of reusable code and because I am an engineer, I like to
 define and reuse patterns from others and from myself. It is not about good 
 practises, because those things depends on the organization, on the context, 
