@@ -9,7 +9,7 @@ It is not about good practises, because those things depends on the organization
 on the context, on the people ...  it is about documenting my way of working.
 I have defined some conventions and patterns in my roles with the aim of having 
 something to clone and start working on a new role, helping to get always the 
-same structure and making easily to understand. This is a kind of document that 
+same structure and making easy to understand. This is a kind of document that 
 you have to read by opening the different files to understand the reasons and 
 patterns used.
 
