@@ -6,12 +6,12 @@ to reuse the code of roles/playbooks because people use different strategies to
 create roles. 
 
 This repo is about patterns: http://en.wikipedia.org/wiki/Software_design_pattern . 
-A pattern is a piece of reusable code and, I like to define and reuse patterns for 
-myself and for the rest of the people to help understanding my code. It is not about 
-good practises, because those things depends on the organization, on the context, 
-on the people ...  it is about documenting a way of working.
-I have defined some conventions and patterns in my roles with the aim of having 
-something to clone and start working on a new role, helping to get always the 
+A pattern is a piece of reusable code, as I like to define and reuse patterns for 
+myself and for the rest of the people to help understanding my code, I have created
+this kind of example. It is not about good practises, because those things depends 
+on the organization, on the context, on the people ...  it is about documenting a way 
+of working. I have defined some conventions and patterns in my roles with the aim of 
+having something to clone and start working on a new role, helping to get always the 
 same structure and making easy to understand. This is a kind of document that 
 you have to read by opening the different files to understand the reasons and 
 patterns used.
