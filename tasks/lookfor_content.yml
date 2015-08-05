@@ -1,0 +1,66 @@
+---
+# Example about how to get contents from different sources,
+# in this case, how to look for a md5 checksum.
+# To do that, given a path to a file with a extension, it will
+# try to find another file with the .md5 extension and read
+# it contents (the content is the output of the 'md5sum' program
+# with the first file as arg.
+
+- name: Define the MD5 checksum URI if needed
+  set_fact: _rolename_lookfor_image_checksum_path="{{ rolename_lookfor_image | regex_replace('^(.*)\.(.*)$', '\\1.md5') }}"
+
+
+# If it is an URL, try to get it and save the output
+- name: Get the url image MD5 checksum if needed
+  command: curl -qs "{{ _rolename_lookfor_image_checksum_path }}"
+  register: _rolename_lookfor_image_checksum_1
+  ignore_errors: yes
+  when: >
+     rolename_lookfor_image_checksum is not defined and
+     rolename_lookfor_image | search("http://.*")
+
+# If it and URL and is not available the md5 file, workout the
+# md5 checksum and save it
+- name: Workout the checksum with the image url if needed
+  shell: curl -qs "{{ _rolename_lookfor_image_checksum_path }}" | md5sum
+  register: _rolename_lookfor_image_checksum_2
+  ignore_errors: yes
+  when: >
+     rolename_lookfor_image_checksum is not defined and
+     rolename_lookfor_image | search("http://.*") and
+     not _rolename_lookfor_image_checksum_1|success
+
+
+# If is a normal file, try to get its content 
+- name: Get the file image MD5 checksum if needed
+  command: cat "{{ _rolename_lookfor_image_checksum_path }}"
+  register: _rolename_lookfor_image_checksum_3
+  ignore_errors: yes
+  when: >
+     rolename_lookfor_image_checksum is not defined and
+     not rolename_lookfor_image | search("http://.*")
+
+# If the previous step was not successful, workout the md5
+- name: Workout the checksum with the image if needed
+  command: md5sum "{{ _rolename_lookfor_image_checksum_path }}"
+  register: _rolename_lookfor_image_checksum_4
+  ignore_errors: yes
+  when: >
+     rolename_lookfor_image_checksum is not defined and
+     not rolename_lookfor_image | search("http://.*") and
+     not _rolename_lookfor_image_checksum_3|success
+
+
+# Finally, get the output of the previous 4 commands and
+# get the one which ended successful
+- name: Load the url MD5 checksum is needed
+  set_fact: rolename_lookfor_image_checksum="{{ item.stdout.split() | first }}"
+  when: rolename_lookfor_image_checksum is not defined and not item|skipped
+  with_items:
+     - "{{ _rolename_lookfor_image_checksum_1 }}"
+     - "{{ _rolename_lookfor_image_checksum_2 }}"
+     - "{{ _rolename_lookfor_image_checksum_3 }}"
+     - "{{ _rolename_lookfor_image_checksum_4 }}"
+        
+- debug: msg="{{ rolename_lookfor_image_checksum }}"
+
