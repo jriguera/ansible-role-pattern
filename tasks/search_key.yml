@@ -1,0 +1,56 @@
+---
+# Example about how to search for a file localy or on the remote server. 
+# This example is about searching for a ssh public key,
+# and it can be on localhost or on the remote server.
+
+- name: Check if the ssh public key is defined locally
+  local_action: stat path={{ rolename_search_ssh_public_key_path }}
+  register: __rolename_search_ssh_public_key_path
+  when: > 
+    rolename_search_ssh_public_key_path is defined and
+    not rolename_search_ssh_public_key_path is none
+
+
+- name: Read ssh public key locally
+  set_fact: _rolename_search_ssh_public_key="{{ lookup('file', rolename_search_ssh_public_key_path) }}"
+  when: > 
+    rolename_search_ssh_public_key_path is defined and
+    not rolename_search_ssh_public_key_path is none and
+    __rolename_search_ssh_public_key_path.stat.exists == true
+
+
+- name: Check if the ssh public key is on the server
+  command: cat {{ rolename_search_ssh_public_key_path }}
+  register: __rolename_search_ssh_public_key_path_remote
+  when: > 
+    rolename_search_ssh_public_key_path is defined and
+    not rolename_search_ssh_public_key_path is none and
+    __rolename_search_ssh_public_key_path.stat.exists == false
+  ignore_errors: yes
+
+
+- name: Read ssh public key on the server
+  set_fact: _rolename_search_ssh_public_key="{{ __rolename_search_ssh_public_key_path_remote.stdout }}"
+  when: > 
+    rolename_search_ssh_public_key_path is defined and
+    not rolename_search_ssh_public_key_path is none and
+    __rolename_search_ssh_public_key_path_remote|success  and
+    __rolename_search_ssh_public_key_path.stat.exists == false
+
+
+- name: Check if the ssh public key is readable
+  fail: msg="SSH keys defined in {{ rolename_search_ssh_public_key_path }} not found!"
+  when: > 
+    rolename_search_ssh_public_key_path is defined and
+    not rolename_search_ssh_public_key_path is none and
+    not _rolename_search_ssh_public_key is defined
+
+
+# Finally get the contents
+    
+- name: Load file ssh public keys
+  set_fact: rolename_search_ssh_public_key="{{ _rolename_search_ssh_public_key }}"
+  when: >
+    _rolename_search_ssh_public_key is defined and
+    not _rolename_search_ssh_public_key is none
+
