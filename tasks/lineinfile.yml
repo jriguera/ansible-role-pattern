@@ -1,0 +1,32 @@
+---
+# Example about how to modify a systemd unit file to 
+# add a user
+
+- name: RedHat - Update user systemd configuration
+  lineinfile:
+    dest: "/lib/systemd/system/{{ rolename_daemon }}.service" 
+    regexp: '^User='
+    insertafter: '^\[Service\]'
+    line: "User={{ rolename_user }}" 
+    state: present
+
+- name: RedHat - Update user systemd configuration
+  lineinfile:
+    dest: "/lib/systemd/system/{{ rolename_daemon }}.service" 
+    regexp: '^Group='
+    insertafter: '^\[Service\]'
+    line: "Group={{ rolename_group }}"
+    state: present
+
+- name: Create dnsmasq group daemon
+  group:
+    name: "{{ dnsmasq_group }}"
+    system: yes
+
+- name: Create dnsmasq user daemon
+  user:
+    comment: "Role daemon"
+    name: "{{ rolename_user }}"
+    group: "{{ rolename_group }}"
+    home: "{{ rolename_var_dir }}"
+    system: yes
